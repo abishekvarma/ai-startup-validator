@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Startup Validator</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 16px;
+      width: 520px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #667eea;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #5a67d8;
+    }
+
+    .result {
+      margin-top: 20px;
+      background: #f4f6ff;
+      padding: 15px;
+      border-radius: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      font-weight: bold;
+      color: #667eea;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>🚀 AI Startup Validator</h1>
+
+    <input type="text" id="ideaInput" placeholder="Enter your startup idea...">
+
+    <button onclick="validateIdea()">Validate Idea</button>
+
+    <div id="result" class="result"></div>
+
+    <h3 style="margin-top:20px;">📜 Previous Ideas</h3>
+    <ul id="history"></ul>
+  </div>
+
+  <script>
+    async function validateIdea() {
+      const idea = document.getElementById("ideaInput").value;
+
+      if (!idea) {
+        alert("Please enter an idea");
+        return;
+      }
+
+      const resultDiv = document.getElementById("result");
+      const historyList = document.getElementById("history");
+
+      resultDiv.innerHTML = "<div class='loading'>Analyzing... ⏳</div>";
+
+      try {
+        const response = await fetch("http://localhost:5000/validate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ idea })
+        });
+
+        const data = await response.json();
+
+        resultDiv.innerHTML = data.result.replace(/\n/g, "<br>");
+
+        // save history
+        const li = document.createElement("li");
+        li.textContent = idea;
+        historyList.prepend(li);
+
+      } catch (error) {
+        resultDiv.innerHTML = "❌ Error connecting to server";
+      }
+    }
+  </script>
+
+</body>
+</html>
