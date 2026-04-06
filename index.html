@@ -2,125 +2,122 @@
 <html>
 <head>
   <title>AI Startup Validator</title>
-
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.95);
+      background: linear-gradient(135deg, #1e1e2f, #2c2c54);
+      color: white;
+      text-align: center;
       padding: 30px;
-      border-radius: 16px;
-      width: 520px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
 
     h1 {
-      text-align: center;
+      font-size: 2.5rem;
       margin-bottom: 20px;
     }
 
     input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      margin-bottom: 15px;
+      width: 60%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
     }
 
     button {
-      width: 100%;
-      padding: 14px;
+      padding: 12px 20px;
+      margin: 10px;
       border: none;
-      border-radius: 10px;
-      background: #667eea;
+      border-radius: 8px;
+      background: #ff7a18;
       color: white;
       font-size: 16px;
       cursor: pointer;
+      transition: 0.3s;
     }
 
     button:hover {
-      background: #5a67d8;
+      background: #ff3c00;
+      transform: scale(1.05);
     }
 
-    .result {
-      margin-top: 20px;
-      background: #f4f6ff;
-      padding: 15px;
-      border-radius: 10px;
-      max-height: 250px;
-      overflow-y: auto;
+    .card {
+      background: white;
+      color: black;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 80%;
+      text-align: left;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
-    ul {
-      padding-left: 20px;
+    pre {
+      white-space: pre-wrap;
+      font-family: monospace;
     }
 
-    .loading {
-      text-align: center;
-      font-weight: bold;
-      color: #667eea;
+    .section-title {
+      margin-top: 30px;
+      font-size: 1.5rem;
+      color: #ffd369;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>🚀 AI Startup Validator</h1>
+  <h1>🚀 AI Startup Idea Validator</h1>
 
-    <input type="text" id="ideaInput" placeholder="Enter your startup idea...">
+  <input id="ideaInput" placeholder="Enter your startup idea..." />
 
-    <button onclick="validateIdea()">Validate Idea</button>
+  <br>
 
-    <div id="result" class="result"></div>
+  <button onclick="validateIdea()">Validate Idea</button>
+  <button onclick="loadIdeas()">Show All Ideas</button>
 
-    <h3 style="margin-top:20px;">📜 Previous Ideas</h3>
-    <ul id="history"></ul>
-  </div>
+  <div class="section-title">Result</div>
+  <div id="result" class="card"></div>
+
+  <div class="section-title">All Ideas</div>
+  <div id="allIdeas"></div>
 
   <script>
     async function validateIdea() {
       const idea = document.getElementById("ideaInput").value;
 
-      if (!idea) {
-        alert("Please enter an idea");
-        return;
-      }
+      const res = await fetch("http://localhost:5000/validate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ idea })
+      });
 
-      const resultDiv = document.getElementById("result");
-      const historyList = document.getElementById("history");
+      const data = await res.json();
 
-      resultDiv.innerHTML = "<div class='loading'>Analyzing... ⏳</div>";
+      document.getElementById("result").innerHTML = `
+        <pre>${data.result}</pre>
+      `;
+    }
 
-      try {
-        const response = await fetch("http://localhost:5000/validate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ idea })
-        });
+    async function loadIdeas() {
+      const res = await fetch("http://localhost:5000/ideas");
+      const data = await res.json();
 
-        const data = await response.json();
+      let html = "";
 
-        resultDiv.innerHTML = data.result.replace(/\n/g, "<br>");
+      data.reverse().forEach(item => {
+        html += `
+          <div class="card">
+            <h3>💡 ${item.idea}</h3>
+            <pre>${item.result}</pre>
+          </div>
+        `;
+      });
 
-        // save history
-        const li = document.createElement("li");
-        li.textContent = idea;
-        historyList.prepend(li);
-
-      } catch (error) {
-        resultDiv.innerHTML = "❌ Error connecting to server";
-      }
+      document.getElementById("allIdeas").innerHTML = html;
     }
   </script>
 

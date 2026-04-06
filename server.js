@@ -7,12 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 👉 In-memory storage (acts like database)
+let ideasDB = [];
+
 // test route
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
 });
 
-// smart logic
+// smarter fake AI logic
 function generateSmartAnalysis(idea) {
   const problems = [
     "Users face inefficiency and lack of convenience in current solutions.",
@@ -33,7 +36,7 @@ function generateSmartAnalysis(idea) {
   ];
 
   const competitors = [
-    "Zomato, Swiggy, and other startups",
+    "Zomato, Swiggy, and other niche startups",
     "Existing apps with similar features but poor UX",
     "Fragmented market with no clear leader"
   ];
@@ -46,8 +49,8 @@ function generateSmartAnalysis(idea) {
 
   const techStacks = [
     "React, Node.js, MongoDB",
-    "Flutter + Firebase",
-    "Next.js with AWS/GCP"
+    "Flutter for mobile + Firebase backend",
+    "Next.js with cloud deployment (AWS/GCP)"
   ];
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -55,7 +58,7 @@ function generateSmartAnalysis(idea) {
 
   return `
 🚀 Idea Summary:
-${idea} is a scalable startup idea addressing real-world inefficiencies with digital innovation.
+${idea} is a promising startup concept focusing on solving real-world problems with scalable digital solutions.
 
 📉 Problem:
 ${pick(problems)}
@@ -78,7 +81,7 @@ ${pick(risks)}
 💰 Profitability Score:
 ${score}/100 – ${
     score > 80
-      ? "High potential if executed well"
+      ? "High potential with strong execution"
       : score > 70
       ? "Good idea but needs differentiation"
       : "Moderate potential with execution risks"
@@ -86,16 +89,29 @@ ${score}/100 – ${
 `;
 }
 
-// route
+// 👉 Validate + STORE idea
 app.post("/validate", (req, res) => {
   const { idea } = req.body;
 
   try {
     const result = generateSmartAnalysis(idea);
+
+    // save in memory
+    ideasDB.push({
+      idea,
+      result,
+      time: new Date()
+    });
+
     res.json({ result });
   } catch (error) {
     res.status(500).send("Error generating response");
   }
+});
+
+// 👉 NEW: Get all ideas (for dashboard)
+app.get("/ideas", (req, res) => {
+  res.json(ideasDB);
 });
 
 app.listen(5000, () => {
