@@ -94,24 +94,44 @@ app.post("/validate", (req, res) => {
   const { idea } = req.body;
 
   try {
+    if (!idea || idea.trim() === "") {
+      return res.status(400).json({ error: "Idea is required" });
+    }
+
     const result = generateSmartAnalysis(idea);
 
-    // save in memory
-    ideasDB.push({
+    // save in memory (with ID)
+    const newIdea = {
+      id: ideasDB.length + 1,
       idea,
       result,
       time: new Date()
-    });
+    };
 
-    res.json({ result });
+    ideasDB.push(newIdea);
+
+    res.json({ result, id: newIdea.id });
   } catch (error) {
     res.status(500).send("Error generating response");
   }
 });
 
-// 👉 NEW: Get all ideas (for dashboard)
+// 👉 Get all ideas (dashboard)
 app.get("/ideas", (req, res) => {
   res.json(ideasDB);
+});
+
+// 👉 NEW: Get idea by ID (IMPORTANT BOOST 🔥)
+app.get("/ideas/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+
+  const idea = ideasDB.find(item => item.id === id);
+
+  if (!idea) {
+    return res.status(404).json({ error: "Idea not found" });
+  }
+
+  res.json(idea);
 });
 
 app.listen(5000, () => {
